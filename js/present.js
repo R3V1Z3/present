@@ -60,6 +60,9 @@ jQuery(document).ready(function() {
         $('#impress').html(md.render(content));
         // start impress first slide
         $("#impress").prepend('SLIDEOPEN'); // <div class="slide">
+        
+        // iterate and move content into feasible slide sections
+        
         // add slide div after each p tag
         $("#impress p").after('SLIDEOC'); // </div><div class="slide">
         // add slide after lists

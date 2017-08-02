@@ -10,10 +10,6 @@
   background: transparent;
 }
 
-blockquote ol, ul {
-  list-style: disc outside none;
-}
-
 a {
   color: #9d0006;
   text-decoration: none;

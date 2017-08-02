@@ -69,11 +69,17 @@ jQuery(document).ready(function() {
     function add_steps() {
         // start impress first slide
         $("#impress").prepend('SLIDEOPEN'); // <div class="slide">
-        // add slide div after each p tag
-        $("#impress p").after('SLIDEOC'); // </div><div class="slide">
-        // add slide after lists
-        $("#impress ul").after('SLIDEOC'); // </div><div class="slide">
-        // close off impress slides
+        
+        // iterate over p elements to add step divs as needed
+        $('#impress p').each(function() {
+            var $next = $(this).next();
+            var tagName = $next.prop("tagName");
+            if ( $.inArray( tagName, [ "UL", "OL", "BLOCKQUOTE", "CODE", "PRE", "TABLE", "HR" ] ) >= 0 ) {
+                $next.after('SLIDEOC');
+            } else {
+                $(this).after('SLIDEOC');
+            }
+        });
         $("#impress").append('SLIDECLOSE');
         document.body.innerHTML = document.body.innerHTML.replace('SLIDEOPEN', '<div class="step">');
         document.body.innerHTML = document.body.innerHTML.replace(/SLIDEOC/g, '</div><div class="step">');

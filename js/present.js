@@ -58,10 +58,41 @@ jQuery(document).ready(function() {
         $("body").append('<div id="impress"></div>');
         $('#impress').html(md.render(content));
         
-        // iterate and move content into feasible slide sections
+        // add impress step divs to content
+        add_steps();
+    
+        // attempt to replace stackedit icons with fontawesome
+        document.body.innerHTML = document.body.innerHTML.replace(/i class="icon-/g, 'i class="fa fa-');
+        impress().init();
+    }
+    
+    function add_steps() {
+        // start impress first slide
+        $("#impress").prepend('SLIDEOPEN'); // <div class="slide">
+        // add slide div after each p tag
+        $("#impress p").after('SLIDEOC'); // </div><div class="slide">
+        // add slide after lists
+        $("#impress ul").after('SLIDEOC'); // </div><div class="slide">
+        // close off impress slides
+        $("#impress").append('SLIDECLOSE');
+        document.body.innerHTML = document.body.innerHTML.replace('SLIDEOPEN', '<div class="step">');
+        document.body.innerHTML = document.body.innerHTML.replace(/SLIDEOC/g, '</div><div class="step">');
+        document.body.innerHTML = document.body.innerHTML.replace('SLIDECLOSE', '</div>');
+        
+        // remove any hr tags at the beginning of steps
+        $('#impress .step').children().each(function() {
+            if ( $(this).is('hr') ) {
+                $(this).remove();
+            }
+        });
+    }
+    
+    function add_sections() {
+        // create content sections by adding classes where needed
         var counter = 1;
-        $('.content').children().each(function() {
+        $('#impress').children().each(function() {
             if ( $(this).is('p') ) {
+                $(this).addClass('section section' + counter);
                 var $p1 = $(this).prev();
                 if ( $p1.is('h1') || $p1.is('h2') || $p1.is('h3') || $p1.is('h4') || $p1.is('h5') || $p1.is('h6') ) {
                     $p1.addClass('section section' + counter);
@@ -69,6 +100,7 @@ jQuery(document).ready(function() {
                     var $p2 = $p1.prev();
                     if ( $p2.is('h1') || $p2.is('h2') || $p2.is('h3') || $p2.is('h4') || $p2.is('h5') || $p2.is('h6') ) {
                         $p2.addClass('section section' + counter);
+                        $p1.addClass('section section' + counter);
                     }
                 }
                 // check next element and add 'alternative' class as needed
@@ -76,28 +108,14 @@ jQuery(document).ready(function() {
                 if ( $next.is('ul') || $next.is('blockquote') || $next.is('code')  || $next.is('pre') || $next.is('table')) {
                     $next.addClass('section section' + counter);
                 }
+                counter += 1;
             }
-            counter += 1;
         });
         
+        // add impress step divs to sections
         for (var i = 0; i <= counter; i++) {
-            $('.section' + counter).wrapAll('<div class="step"/>');
+            $('.section' + i).wrapAll('<div class="step"/>');
         }
-        
-        // // start impress first slide
-        // $("#impress").prepend('SLIDEOPEN'); // <div class="slide">
-        // // add slide div after each p tag
-        // $("#impress p").after('SLIDEOC'); // </div><div class="slide">
-        // // add slide after lists
-        // $("#impress ul").after('SLIDEOC'); // </div><div class="slide">
-        // // close off impress slides
-        // $("#impress").append('SLIDECLOSE');
-        // document.body.innerHTML = document.body.innerHTML.replace('SLIDEOPEN', '<div class="step">');
-        // document.body.innerHTML = document.body.innerHTML.replace(/SLIDEOC/g, '</div><div class="step">');
-        // document.body.innerHTML = document.body.innerHTML.replace('SLIDECLOSE', '</div>');
-        // attempt to replace stackedit icons with fontawesome
-        document.body.innerHTML = document.body.innerHTML.replace(/i class="icon-/g, 'i class="fa fa-');
-        impress().init();
     }
 
     function rendercss(content) {

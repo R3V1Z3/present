@@ -58,32 +58,45 @@ jQuery(document).ready(function() {
         $("body").append('<div id="impress"></div>');
         $('#impress').html(md.render(content));
         
-        // add impress step divs to content
+        // add slide codes for conversion to impress step divs
+        add_slide_codes();
+        // convert slides to step divs
         add_steps();
     
         // attempt to replace stackedit icons with fontawesome
         document.body.innerHTML = document.body.innerHTML.replace(/i class="icon-/g, 'i class="fa fa-');
-        impress().init();
+        //impress().init();
     }
     
-    function add_steps() {
+    function add_slide_codes() {
         // start impress first slide
         $("#impress").prepend('SLIDEOPEN'); // <div class="slide">
         
         // iterate over p elements to add step divs as needed
-        $('#impress p').each(function() {
+        $('#impress').children('p').each(function() {
             var $next = $(this).next();
             var tagName = $next.prop("tagName");
-            if ( $.inArray( tagName, [ "UL", "OL", "BLOCKQUOTE", "CODE", "PRE", "TABLE", "HR" ] ) >= 0 ) {
+            if ( $.inArray( tagName, [ "UL", "OL", "BLOCKQUOTE", "CODE", "PRE", "TABLE" ] ) >= 0 ) {
                 $next.after('SLIDEOC');
+            } else if ( $.inArray( tagName, [ "HR" ] ) >= 0 ) {
+                $next.remove();
+                $(this).after('SLIDEOC');
             } else {
                 $(this).after('SLIDEOC');
             }
         });
+        
+        // iterate over header elements to add step divs
+        $('#impress :header').each(function() {
+            var $next = $(this).next();
+            var tagName = $next.prop("tagName");
+            if ( $.inArray( tagName, [ "UL", "OL", "BLOCKQUOTE", "CODE", "PRE", "TABLE", "HR" ] ) >= 0 ) {
+                $next.after('SLIDEOC');
+            }
+        });
+        
+        // close impress div
         $("#impress").append('SLIDECLOSE');
-        document.body.innerHTML = document.body.innerHTML.replace('SLIDEOPEN', '<div class="step">');
-        document.body.innerHTML = document.body.innerHTML.replace(/SLIDEOC/g, '</div><div class="step">');
-        document.body.innerHTML = document.body.innerHTML.replace('SLIDECLOSE', '</div>');
         
         // remove any hr tags at the beginning of steps
         $('#impress .step').children().each(function() {
@@ -91,37 +104,14 @@ jQuery(document).ready(function() {
                 $(this).remove();
             }
         });
+        
     }
     
-    function add_sections() {
-        // create content sections by adding classes where needed
-        var counter = 1;
-        $('#impress').children().each(function() {
-            if ( $(this).is('p') ) {
-                $(this).addClass('section section' + counter);
-                var $p1 = $(this).prev();
-                if ( $p1.is('h1') || $p1.is('h2') || $p1.is('h3') || $p1.is('h4') || $p1.is('h5') || $p1.is('h6') ) {
-                    $p1.addClass('section section' + counter);
-                } else if ( $p1.is('br') || $p1.is('hr') ) {
-                    var $p2 = $p1.prev();
-                    if ( $p2.is('h1') || $p2.is('h2') || $p2.is('h3') || $p2.is('h4') || $p2.is('h5') || $p2.is('h6') ) {
-                        $p2.addClass('section section' + counter);
-                        $p1.addClass('section section' + counter);
-                    }
-                }
-                // check next element and add 'alternative' class as needed
-                var $next = $(this).next();
-                if ( $next.is('ul') || $next.is('blockquote') || $next.is('code')  || $next.is('pre') || $next.is('table')) {
-                    $next.addClass('section section' + counter);
-                }
-                counter += 1;
-            }
-        });
-        
-        // add impress step divs to sections
-        for (var i = 0; i <= counter; i++) {
-            $('.section' + i).wrapAll('<div class="step"/>');
-        }
+    function add_steps() {
+        // convert slide codes to impress step divs
+        document.body.innerHTML = document.body.innerHTML.replace('SLIDEOPEN', '<div class="step">');
+        document.body.innerHTML = document.body.innerHTML.replace(/SLIDEOC/g, '</div><div class="step">');
+        document.body.innerHTML = document.body.innerHTML.replace('SLIDECLOSE', '</div>');
     }
 
     function rendercss(content) {

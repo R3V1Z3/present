@@ -65,7 +65,7 @@ jQuery(document).ready(function() {
     
         // attempt to replace stackedit icons with fontawesome
         document.body.innerHTML = document.body.innerHTML.replace(/i class="icon-/g, 'i class="fa fa-');
-        //impress().init();
+        impress().init();
     }
     
     function add_slide_codes() {

@@ -62,10 +62,47 @@ jQuery(document).ready(function() {
         add_slide_codes();
         // convert slides to step divs
         add_steps();
+        // add effects to steps
+        add_effects();
     
         // attempt to replace stackedit icons with fontawesome
         document.body.innerHTML = document.body.innerHTML.replace(/i class="icon-/g, 'i class="fa fa-');
         impress().init();
+    }
+    
+    function add_effects() {
+        var counter = 0;
+        var rotate = 0;
+        $('#impress .step').each(function() {
+            if ( counter === 0 ) {
+                $(this).attr( 'data-x', 0);
+                $(this).attr( 'data-y', 0);
+                $(this).attr( 'data-z', 0);
+                $(this).attr( 'data-rotate', rotate);
+                $(this).attr( 'data-scale', 1);
+            } else {
+                $(this).attr( 'data-x', 0);
+                $(this).attr( 'data-y', 0);
+                $(this).attr( 'data-z', 0);
+                $(this).attr( 'data-rotate', rotate);
+                $(this).attr( 'data-scale', counter/2);
+            }
+            counter += 1;
+            rotate += 15;
+            if ( rotate > 360 ) rotate = 0;
+        });
+    }
+    
+    function add_steps() {
+        // convert slide codes to impress step divs
+        document.body.innerHTML = document.body.innerHTML.replace('SLIDEOPEN', '<div class="step">');
+        document.body.innerHTML = document.body.innerHTML.replace(/SLIDEOC/g, '</div><div class="step">');
+        document.body.innerHTML = document.body.innerHTML.replace('SLIDECLOSE', '</div>');
+        // remove last step div if it's empty
+        var last_child = $('#impress .step:last-child').text();
+        if ( last_child.length <= 1 ) {
+            $('#impress .step:last-child').remove();
+        }
     }
     
     function add_slide_codes() {
@@ -93,6 +130,14 @@ jQuery(document).ready(function() {
             if ( $.inArray( tagName, [ "UL", "OL", "BLOCKQUOTE", "CODE", "PRE", "TABLE", "HR" ] ) >= 0 ) {
                 $next.after('SLIDEOC');
             }
+            // add slide code prior to the header if there's content before it
+            var $prev = $(this).prev();
+            tagName = $prev.prop("tagName");
+            if ( $.inArray( tagName, [ "UL", "OL", "BLOCKQUOTE", "CODE", "PRE", "TABLE", "HR" ] ) >= 0 ) {
+                if ( $(this).text().indexOf('SLIDEOC') !== -1 ) {
+                    $(this).before('SLIDEOC');
+                }
+            }
         });
         
         // close impress div
@@ -105,13 +150,6 @@ jQuery(document).ready(function() {
             }
         });
         
-    }
-    
-    function add_steps() {
-        // convert slide codes to impress step divs
-        document.body.innerHTML = document.body.innerHTML.replace('SLIDEOPEN', '<div class="step">');
-        document.body.innerHTML = document.body.innerHTML.replace(/SLIDEOC/g, '</div><div class="step">');
-        document.body.innerHTML = document.body.innerHTML.replace('SLIDECLOSE', '</div>');
     }
 
     function rendercss(content) {

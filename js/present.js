@@ -26,7 +26,7 @@ jQuery(document).ready(function() {
     $('head').append('<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.5.0/styles/' + style.replace(/[^a-zA-Z0-9-_]+/ig, '') + '.min.css">');
     
     // add awesomeicons too
-    $('head').append('<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css">');
+    $('head').append('<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css">');
     
     // get css parameters
     var css = getURLParameter('css');
@@ -51,27 +51,50 @@ jQuery(document).ready(function() {
                     }
                     catch (__) {}
                 }
-
                 return '<pre class="hljs"><code>' + md.utils.escapeHtml(str) + '</code></pre>';
             }
         });
         // add the impress div
         $("body").append('<div id="impress"></div>');
         $('#impress').html(md.render(content));
-        // start impress first slide
-        $("#impress").prepend('SLIDEOPEN'); // <div class="slide">
         
         // iterate and move content into feasible slide sections
+        var counter = 1;
+        $('.content').children().each(function() {
+            if ( $(this).is('p') ) {
+                var $p1 = $(this).prev();
+                if ( $p1.is('h1') || $p1.is('h2') || $p1.is('h3') || $p1.is('h4') || $p1.is('h5') || $p1.is('h6') ) {
+                    $p1.addClass('section section' + counter);
+                } else if ( $p1.is('br') || $p1.is('hr') ) {
+                    var $p2 = $p1.prev();
+                    if ( $p2.is('h1') || $p2.is('h2') || $p2.is('h3') || $p2.is('h4') || $p2.is('h5') || $p2.is('h6') ) {
+                        $p2.addClass('section section' + counter);
+                    }
+                }
+                // check next element and add 'alternative' class as needed
+                var $next = $(this).next();
+                if ( $next.is('ul') || $next.is('blockquote') || $next.is('code')  || $next.is('pre') || $next.is('table')) {
+                    $next.addClass('section section' + counter);
+                }
+            }
+            counter += 1;
+        });
         
-        // add slide div after each p tag
-        $("#impress p").after('SLIDEOC'); // </div><div class="slide">
-        // add slide after lists
-        $("#impress ul").after('SLIDEOC'); // </div><div class="slide">
-        // close off impress slides
-        $("#impress").append('SLIDECLOSE');
-        document.body.innerHTML = document.body.innerHTML.replace('SLIDEOPEN', '<div class="step">');
-        document.body.innerHTML = document.body.innerHTML.replace(/SLIDEOC/g, '</div><div class="step">');
-        document.body.innerHTML = document.body.innerHTML.replace('SLIDECLOSE', '</div>');
+        for (var i = 0; i <= counter; i++) {
+            $('.section' + counter).wrapAll('<div class="step"/>');
+        }
+        
+        // // start impress first slide
+        // $("#impress").prepend('SLIDEOPEN'); // <div class="slide">
+        // // add slide div after each p tag
+        // $("#impress p").after('SLIDEOC'); // </div><div class="slide">
+        // // add slide after lists
+        // $("#impress ul").after('SLIDEOC'); // </div><div class="slide">
+        // // close off impress slides
+        // $("#impress").append('SLIDECLOSE');
+        // document.body.innerHTML = document.body.innerHTML.replace('SLIDEOPEN', '<div class="step">');
+        // document.body.innerHTML = document.body.innerHTML.replace(/SLIDEOC/g, '</div><div class="step">');
+        // document.body.innerHTML = document.body.innerHTML.replace('SLIDECLOSE', '</div>');
         // attempt to replace stackedit icons with fontawesome
         document.body.innerHTML = document.body.innerHTML.replace(/i class="icon-/g, 'i class="fa fa-');
         impress().init();

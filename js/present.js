@@ -19,6 +19,10 @@ jQuery(document).ready(function() {
     $('link[rel=stylesheet]').remove();
     var filename = getURLParameter('filename');
     
+    // var animation = 'rotate-10/scale+0.25';
+    var animation = getURLParameter('animation');
+    if (!animation) animation = '';
+    
     // get highlight.js style if provided
     var style = getURLParameter('style');
     if (!style) style = 'default';
@@ -63,33 +67,55 @@ jQuery(document).ready(function() {
         // convert slides to step divs
         add_steps();
         // add effects to steps
-        add_effects();
+        add_effects(animation);
     
         // attempt to replace stackedit icons with fontawesome
         document.body.innerHTML = document.body.innerHTML.replace(/i class="icon-/g, 'i class="fa fa-');
         impress().init();
     }
     
-    function add_effects() {
+    function get_anim_array(animation) {
+        // var animation = 'rotate-10/scale+0.25';
+
+        // setup defaults
+        var anim = { x: 0, y: 0, z: 0, rotate: 0, scale: 1};
+        
+        if ( animation.length > 0 ) {
+            var split = animation.split('/');
+            for (var i = 0; i < split.length; i++) {
+                // get characters until + or - sign
+                if ( split[i].split('-').length === 2 ) {
+                    anim[ split[i].split('-')[0] ] = -(split[i].split('-')[1]);
+                } else if ( split[i].split('+').length === 2 ) {
+                    anim[ split[i].split('+')[0] ] = split[i].split('+')[1];
+                } else if ( split[i].split(' ').length === 2 ) {
+                    anim[ split[i].split(' ')[0] ] = split[i].split(' ')[1];
+                } else {
+                    // no + or - in string so use a default
+                }
+            }
+        }
+        return anim;
+    }
+    
+    function add_effects(animation) {
+        var anim = get_anim_array(animation);
+        var scale = 1;
         var counter = 0;
         var rotate = 0;
         $('#impress .step').each(function() {
-            if ( counter === 0 ) {
-                $(this).attr( 'data-x', 0);
-                $(this).attr( 'data-y', 0);
-                $(this).attr( 'data-z', 0);
-                $(this).attr( 'data-rotate', rotate);
-                $(this).attr( 'data-scale', 1);
-            } else {
-                $(this).attr( 'data-x', 0);
-                $(this).attr( 'data-y', 0);
-                $(this).attr( 'data-z', 0);
-                $(this).attr( 'data-rotate', rotate);
-                $(this).attr( 'data-scale', counter/2);
-            }
+            $(this).attr( 'data-x', anim['x']);
+            $(this).attr( 'data-y', anim['y']);
+            $(this).attr( 'data-z', anim['z']);
+            $(this).attr( 'data-rotate', rotate);
+            $(this).attr( 'data-scale', scale);
             counter += 1;
-            rotate += 15;
-            if ( rotate > 360 ) rotate = 0;
+            scale += Number(anim['scale']);
+            rotate += Number(anim['rotate']);
+            if ( rotate > 360 || rotate < 0 ) {
+                rotate = 0;
+            }
+            console.log( rotate );
         });
     }
     

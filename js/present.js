@@ -23,6 +23,10 @@ jQuery(document).ready(function() {
     var animation = getURLParameter('animation');
     if (!animation) animation = '';
     
+    // method for parsing content into slides
+    var method = getURLParameter('method');
+    if (!method) method = 'default';
+    
     // get highlight.js style if provided
     var style = getURLParameter('style');
     if (!style) style = 'default';
@@ -135,36 +139,56 @@ jQuery(document).ready(function() {
         // start impress first slide
         $("#impress").prepend('SLIDEOPEN'); // <div class="slide">
         
-        // iterate over p elements to add step divs as needed
-        $('#impress').children('p').each(function() {
-            var $next = $(this).next();
-            var tagName = $next.prop("tagName");
-            if ( $.inArray( tagName, [ "UL", "OL", "BLOCKQUOTE", "CODE", "PRE", "TABLE" ] ) >= 0 ) {
-                $next.after('SLIDEOC');
-            } else if ( $.inArray( tagName, [ "HR" ] ) >= 0 ) {
-                $next.remove();
-                $(this).after('SLIDEOC');
-            } else {
-                $(this).after('SLIDEOC');
-            }
-        });
-        
-        // iterate over header elements to add step divs
-        $('#impress :header').each(function() {
-            var $next = $(this).next();
-            var tagName = $next.prop("tagName");
-            if ( $.inArray( tagName, [ "UL", "OL", "BLOCKQUOTE", "CODE", "PRE", "TABLE", "HR" ] ) >= 0 ) {
-                $next.after('SLIDEOC');
-            }
-            // add slide code prior to the header if there's content before it
-            var $prev = $(this).prev();
-            tagName = $prev.prop("tagName");
-            if ( $.inArray( tagName, [ "UL", "OL", "BLOCKQUOTE", "CODE", "PRE", "TABLE", "HR" ] ) >= 0 ) {
-                if ( $(this).text().indexOf('SLIDEOC') !== -1 ) {
+        if (method === 'default') {
+            // iterate over p elements to add step divs as needed
+            $('#impress').children('p').each(function() {
+                var $next = $(this).next();
+                var tagName = $next.prop("tagName");
+                if ( $.inArray( tagName, [ "UL", "OL", "BLOCKQUOTE", "CODE", "PRE", "TABLE" ] ) >= 0 ) {
+                    $next.after('SLIDEOC');
+                } else if ( $.inArray( tagName, [ "HR" ] ) >= 0 ) {
+                    $next.remove();
+                    $(this).after('SLIDEOC');
+                } else {
+                    $(this).after('SLIDEOC');
+                }
+            });
+            // iterate over header elements to add step divs
+            $('#impress :header').each(function() {
+                var $next = $(this).next();
+                var tagName = $next.prop("tagName");
+                if ( $.inArray( tagName, [ "UL", "OL", "BLOCKQUOTE", "CODE", "PRE", "TABLE", "HR" ] ) >= 0 ) {
+                    $next.after('SLIDEOC');
+                }
+                // add slide code prior to the header if there's content before it
+                var $prev = $(this).prev();
+                tagName = $prev.prop("tagName");
+                if ( $.inArray( tagName, [ "UL", "OL", "BLOCKQUOTE", "CODE", "PRE", "TABLE", "HR" ] ) >= 0 ) {
+                    if ( $(this).text().indexOf('SLIDEOC') !== -1 ) {
+                        $(this).before('SLIDEOC');
+                    }
+                }
+            });
+        } else if (method === 'newline') {
+            $('#impress').children().each(function() {
+                if ( $(this).is('p') ) {
+                    $(this).html(function(i, html){
+                        // replace ;: chars with br
+                        html = html.replace(/[:;]/g, ':<br>');
+                        // split at br tags and wrap content with slide divs
+                        var txt = html.split('<br>');
+                        for( var x = 0; x < txt.length; x++ ) {
+                            $('#impress').append( 'SLIDEOC' + txt[x] );
+                        }
+                    });
+                    // p tag contents moved to wrapper so remove original now
+                    $(this).remove();
+                } else {
                     $(this).before('SLIDEOC');
                 }
-            }
-        });
+            });
+            
+        }
         
         // close impress div
         $("#impress").append('SLIDECLOSE');

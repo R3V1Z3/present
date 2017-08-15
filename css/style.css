@@ -1,4 +1,4 @@
-@import 'https://fonts.googleapis.com/css?family=Source+Sans+Pro';
+@import 'https://fonts.googleapis.com/css?family=Source+Sans+Pro|Alegreya';
 
 * {
   margin: 0;
@@ -19,7 +19,10 @@ a:hover {
   text-decoration: underline;
 }
 
-h1 { text-transform: uppercase; }
+h1 {
+  font-family: 'Alegreya', serif;
+  font-size: 2em;
+}
 
 html { height: 100%; }
 
